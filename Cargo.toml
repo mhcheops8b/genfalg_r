@@ -18,6 +18,8 @@ path = "src/tr_iso_remove.rs"
 
 
 [dependencies]
-falglib = { path = "c:/users/mhycko/source/repos/mhcheops8b/falglib_r" }
-permlib = { path = "c:/users/mhycko/source/repos/mhcheops8b/permlib_r" }
+# falglib = { path = "c:/users/mhycko/source/repos/mhcheops8b/falglib_r" }
+falglib = { git = "https://github.com/mhcheops8b/falglib_r.git" }
+# permlib = { path = "c:/users/mhycko/source/repos/mhcheops8b/permlib_r" }
+permlib = { git = "https://github.com/mhcheops8b/permlib_r.git" }
 
