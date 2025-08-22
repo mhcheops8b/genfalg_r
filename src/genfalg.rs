@@ -1,6 +1,9 @@
+use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
+use std::time::Instant;
+// use std::time::{Duration, Instant};
 
 use falglib;
 fn main2() {
@@ -81,11 +84,23 @@ fn main() {
                 continue;
             }
             
-            eprintln!("Line: {line2_idx}");
+            //eprintln!("Line: {line2_idx}");
+            let time_iter_start = Instant::now();
             let parsed_ord2 = falglib::parse_vector(cursize, &line_qord2);
             
-            for qord2 in falglib::rel_isomorphic_expand(&parsed_ord2).0 {
-                    
+            let qord2_iso_exp = falglib::rel_isomorphic_expand(&parsed_ord2).0;
+            let qord2_iso_exp_len = qord2_iso_exp.len();
+            eprintln!("Line: {line2_idx} - {qord2_iso_exp_len}");
+            let mut num_compat = 0usize;
+            // let mut cur_perm_cnt = 0usize;
+            // let mut num_skipped = 0usize;
+            //let mut map_already_checked =HashMap::< Vec<Vec<usize>>, HashSet< Vec<Vec<usize>> >>::new();
+            // let mut already_checked_set = HashSet::<Vec<Vec<usize>>>::new();
+            for qord2 in qord2_iso_exp {
+                // cur_perm_cnt+=1;
+                // if cur_perm_cnt % 500 == 1 {
+                //     eprintln!("Cur perm: {cur_perm_cnt} / {qord2_iso_exp_len}");    
+                // }
                 let mut line1_idx = 0usize;
                 if let Ok(lines_qord1) = read_lines(&filename) {
                     for line_qord1 in lines_qord1.map_while(Result::ok) {
@@ -94,12 +109,46 @@ fn main() {
                             break;
                         }
                         let parsed_ord1 = falglib::parse_vector(cursize, &line_qord1);
-                        falglib::falg_generate_with_qords(&parsed_ord1, &qord2);
+                        // let mut already_checked_set = HashSet::<Vec<Vec<usize>>>::new();
+
+                        // if false {
+                        //     if falglib::rel_are_pair_antisymmetric(&parsed_ord1, &qord2) {
+                        //         num_compat+=1;
+                        //         if already_checked_set.is_empty() || !tst1(&already_checked_set, &parsed_ord1, &qord2) {
+                        //             falglib::falg_generate_with_qords(&parsed_ord1, &qord2);
+                        //         }
+                        //         else {
+                        //             num_skipped+=1;
+                        //             //eprintln!("Skipped count: {}", num_skipped);
+                        //         }
+                        //     }
+                        // }
+                        
+                        if falglib::rel_are_pair_antisymmetric(&parsed_ord1, &qord2) {
+                            num_compat+=1;
+                                falglib::falg_generate_with_qords(&parsed_ord1, &qord2);                            
+                        }
+
+
+                        
+                        // for perm in falglib::rel_get_stabilizer_perms(&parsed_ord1) {
+                        //     already_checked_set.insert(falglib::rel_isomorphic_image(&qord2, &perm));
+                        // }
+                        // }
+                        // else {
+                        //     num_skipped+=1;
+                        // }
 
                     }
+                    // already_checked_set.insert(qord2);
+                    // if cur_perm_cnt % 500 == 1 {
+                    //     eprintln!("Skipped count: {}", num_skipped);
+                    // }
 
                 }
             }
+            eprintln!("{}\t{}\t{}\t{}", line2_idx, qord2_iso_exp_len, num_compat, time_iter_start.elapsed().as_secs_f64());
+            // eprintln!("{}\t{}\t{}\t{}\t{}", line2_idx, qord2_iso_exp_len, num_compat, num_skipped, time_iter_start.elapsed().as_secs_f64());
             // println!("{:?}", &parsed_ord);
             // println!("{:?}", falglib::rel_quasi_order_find_can_min_repr(&parsed_ord));
             //println!("{:?}", falglib::rel_quasi_order_find_can_min_repr(&parsed_ord));
@@ -146,6 +195,15 @@ fn main() {
     // }
 }
 
+fn tst1(already_checked_set: &HashSet<Vec<Vec<usize>>>, rel_qord1: &Vec<Vec<usize>>, cur_rel_qord2: &Vec<Vec<usize>>) -> bool {
+    for perm in falglib::rel_get_stabilizer_perms(&rel_qord1) {
+        let iso_qord2 = falglib::rel_isomorphic_image(&cur_rel_qord2, &perm);
+        if already_checked_set.contains(&iso_qord2) {
+            return true;
+        }
+    }
+    false
+}
 
 
 // The output is wrapped in a Result to allow matching on errors.

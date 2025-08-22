@@ -35,19 +35,21 @@ fn main() {
     else {
         eprintln!("Error opening file '{}'.", &filename);
     }
-    eprintln!("{}", all_falg.len());
+    // eprintln!("{}", all_falg.len());
 
 
     // for cur_falg in all_falg {
     //     println!("{:?}", falglib::falg_find_min_repr(&cur_falg));
     // }
-
+    let mut total_cnt = 0usize;
     loop {
+        eprintln!("{}", all_falg.len());
         if all_falg.is_empty() {
             break;
         }
         let cur_falg = all_falg.iter().next().cloned().unwrap();
         println!("{:?}", falglib::falg_find_min_repr(&cur_falg));
+        total_cnt +=1;
         all_falg.take(&cur_falg).unwrap();
         let mut perm:Vec<usize> = (0..cursize).collect();
         loop {
@@ -62,6 +64,7 @@ fn main() {
             }
         }
     }
+    eprintln!("Total: {total_cnt}");
 
 
 }
