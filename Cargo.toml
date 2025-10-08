@@ -52,6 +52,9 @@ path = "src/get_qord_index.rs"
 name = "genfalgload_curord_perm"
 path = "src/genfalgload_curord_perm.rs"
 
+[[bin]]
+name = "split_gen_results"
+path = "src/split_gen_results.rs"
 
 [dependencies]
 # falglib = { path = "c:/users/mhycko/source/repos/mhcheops8b/falglib_r" }
