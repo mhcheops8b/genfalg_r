@@ -13,6 +13,10 @@ name = "genfalgload"
 path = "src/genfalgload.rs"
 
 [[bin]]
+name = "genfalgload2"
+path = "src/genfalgload2.rs"
+
+[[bin]]
 name = "genfalgstabload"
 path = "src/genfalgstabload.rs"
 
@@ -27,6 +31,27 @@ path = "src/tr_iso_remove.rs"
 [[bin]]
 name = "genstab"
 path = "src/genstab.rs"
+
+[[bin]]
+name = "check_min_repr"
+path = "src/check_min_repr.rs"
+
+[[bin]]
+name = "check_falg"
+path = "src/check_falg.rs"
+
+[[bin]]
+name = "contains_results"
+path = "src/contains_results.rs"
+
+[[bin]]
+name = "get_qord_index"
+path = "src/get_qord_index.rs"
+
+[[bin]]
+name = "genfalgload_curord_perm"
+path = "src/genfalgload_curord_perm.rs"
+
 
 [dependencies]
 # falglib = { path = "c:/users/mhycko/source/repos/mhcheops8b/falglib_r" }

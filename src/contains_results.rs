@@ -29,8 +29,8 @@ fn main2() {
 fn main() {
     let args_len = std::env::args().len();
 
-    if args_len < 3 {
-        println!("Usage: {} <size> <rel_file> [from [to]]", std::env::args().next().unwrap());
+    if args_len < 4 {
+        println!("Usage: {} <size> <res_file> <res_to_check_file>", std::env::args().next().unwrap());
         return;
     }
 
@@ -41,98 +41,33 @@ fn main() {
     }
 
     //let filename = String::from("C:/Users/mhycko/Documents/rust_genqord2/results/qord3_ord2canmax.txt");
-    let filename = std::env::args().nth(2).unwrap();
+    let res_filename = std::env::args().nth(2).unwrap();
+    let res_chk_filename = std::env::args().nth(3).unwrap();
 
-
-    let mut b_has_from = false;
-    let mut n_from = 0usize;
-    if args_len >= 4 {
-        // only from 
-        match std::env::args().nth(3).unwrap().parse() {
-            Ok(val) => {n_from = val},
-            Err(_e) => println!("Must be a number")
-        }
-        b_has_from = true;
-    }
-    let mut b_has_to = false;
-    let mut n_to = 0usize;
-
-    if args_len == 5 {
-        // from to
-        match std::env::args().nth(4).unwrap().parse() {
-            Ok(val) => {n_to = val},
-            Err(_e) => println!("Must be a number")
-        }
-        b_has_to = true;
-    }
-
-    // load all reduced qords
-    let mut red_qords = Vec::<Vec<Vec<usize>>>::new();
-    if let Ok(lines_qord) = read_lines(&filename) {
-        for line_qord in lines_qord.map_while(Result::ok) {
-            red_qords.push(falglib::parse_vector(cursize, &line_qord));
+    // load all results
+    let mut all_results = HashSet::<Vec<Vec<usize>>>::new();
+    if let Ok(lines_res) = read_lines(&res_filename) {
+        for line_qord in lines_res.map_while(Result::ok) {
+            all_results.insert(falglib::parse_vector(cursize, &line_qord));
         }
     }
     else {
-        println!("Error opening file '{}'.", &filename);
+        println!("Error opening res file '{}'.", &res_filename);
     }
-    eprintln!("{}", red_qords.len());
+    let all_results_size = all_results.len();
+    eprintln!("{}", all_results_size);
     
-
-    // Výpočet:
-    //  1. redukovaného, páry ( qo_i, iso_exp(qo_j) ) pre j>=i
-    //  2. iso_exp sa volá pre každé j iba raz
-
-    let mut c_from = 1usize;
-    let mut c_to = 1usize;
-    if b_has_from {
-        c_from = n_from;
-    }
-
-    if b_has_to {
-        c_to = n_to;
+    if let Ok(lines_chk_res) = read_lines(&res_chk_filename) {
+        for line_chk_res in lines_chk_res.map_while(Result::ok) {
+            let parsed_chk_res = falglib::parse_vector(cursize, &line_chk_res);
+            if !all_results.contains(&parsed_chk_res) {
+                // println!("Err: Result: {parsed_chk_res:?} not included");
+                println!("{parsed_chk_res:?}");
+            }
+        }
     }
     else {
-        c_to = red_qords.len();
-    }
-
-    for qord2_idx in c_from-1..=c_to-1 {
-        let time_iter_start = Instant::now();            
-        let qord2_iso_exp = falglib::rel_isomorphic_expand_vec(&red_qords[qord2_idx]).0;
-        let qord2_iso_exp_len = qord2_iso_exp.len();
-        eprintln!("Line: {} - {qord2_iso_exp_len}", qord2_idx + 1);
-        let mut num_compat = 0usize;
-        let mut cur_perm_cnt = 0usize;
-        for qord2 in qord2_iso_exp {
-                cur_perm_cnt += 1;
-                // if cur_perm_cnt % 500 == 1 {
-                eprintln!("\t- Cur perm: {cur_perm_cnt} / {qord2_iso_exp_len}");    
-                // }
-                for qord1_idx in 0..=qord2_idx { 
-                        
-                    if falglib::rel_are_pair_antisymmetric(&red_qords[qord1_idx], &qord2) {
-                        num_compat+=1;
-                        falglib::falg_generate_with_qords(&red_qords[qord1_idx], &qord2);                            
-                    }
-
-
-                        
-                        // for perm in falglib::rel_get_stabilizer_perms(&parsed_ord1) {
-                        //     already_checked_set.insert(falglib::rel_isomorphic_image(&qord2, &perm));
-                        // }
-                        // }
-                        // else {
-                        //     num_skipped+=1;
-                        // }
-
-                }
-                    // already_checked_set.insert(qord2);
-                    // if cur_perm_cnt % 500 == 1 {
-                    //     eprintln!("Skipped count: {}", num_skipped);
-                    // }
-
-        }
-        eprintln!("{}\t{}\t{}\t{}", qord2_idx+1, qord2_iso_exp_len, num_compat, time_iter_start.elapsed().as_secs_f64());
+        println!("Error opening res file '{}'.", &res_chk_filename);
     }
     
        

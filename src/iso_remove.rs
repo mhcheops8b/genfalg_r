@@ -10,18 +10,28 @@ fn main() {
     let args_len = std::env::args().len();
 
     if args_len < 3 {
-        println!("Usage: {} <size> <falg_file>", std::env::args().next().unwrap());
+        println!("Usage: {} <size> <falg_file> [<min=0 (default) | max=1>]", std::env::args().next().unwrap());
         return;
     }
-
+    
     let mut cursize = 0usize;
     match std::env::args().nth(1).unwrap().parse() {
         Ok(val) => {cursize = val},
         Err(_e) => println!("Must be a number")
     }
+   
+
 
     //let filename = String::from("C:/Users/mhycko/Documents/rust_genqord2/results/qord3_ord2canmax.txt");
     let filename = std::env::args().nth(2).unwrap();
+
+    let mut repr_order = 0usize;
+    if args_len == 4 {
+        match std::env::args().nth(3).unwrap().parse() {
+            Ok(val) => {if val == 1 || val == 0 {repr_order = val} else {println!("Must be 0 or 1"); return;}},
+            Err(_e) => println!("Must be a number 0 (min) or 1 (max)")
+        }
+    }    
 
     let mut all_falg: HashSet<Vec<Vec<usize>>> = HashSet::new();
     if let Ok(lines_falg) = read_lines(&filename) {
@@ -48,7 +58,13 @@ fn main() {
             break;
         }
         let cur_falg = all_falg.iter().next().cloned().unwrap();
-        println!("{:?}", falglib::falg_find_min_repr(&cur_falg));
+        if repr_order == 0 {
+            println!("{:?}", falglib::falg_find_min_repr(&cur_falg))
+        }
+        else {
+            println!("{:?}", falglib::falg_find_max_repr(&cur_falg))
+        }
+ 
         total_cnt +=1;
         all_falg.take(&cur_falg).unwrap();
         let mut perm:Vec<usize> = (0..cursize).collect();

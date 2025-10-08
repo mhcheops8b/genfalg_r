@@ -29,8 +29,8 @@ fn main2() {
 fn main() {
     let args_len = std::env::args().len();
 
-    if args_len < 3 {
-        println!("Usage: {} <size> <rel_file> [from [to]]", std::env::args().next().unwrap());
+    if args_len < 4 {
+        println!("Usage: {} <size> <rel_file> <ord_idx> [<ordexp_from> [<ordexp_to>]]", std::env::args().next().unwrap());
         return;
     }
 
@@ -43,28 +43,35 @@ fn main() {
     //let filename = String::from("C:/Users/mhycko/Documents/rust_genqord2/results/qord3_ord2canmax.txt");
     let filename = std::env::args().nth(2).unwrap();
 
+    let mut curord_idx = 0usize;
+    match std::env::args().nth(3).unwrap().parse() {
+        Ok(val) => {curord_idx = val},
+        Err(_e) => println!("Must be a number")
+    }
 
     let mut b_has_from = false;
-    let mut n_from = 0usize;
-    if args_len >= 4 {
+    let mut ordexp_from = 0usize;
+    if args_len >= 5 {
         // only from 
-        match std::env::args().nth(3).unwrap().parse() {
-            Ok(val) => {n_from = val},
+        match std::env::args().nth(4).unwrap().parse() {
+            Ok(val) => {ordexp_from = val},
             Err(_e) => println!("Must be a number")
         }
         b_has_from = true;
     }
     let mut b_has_to = false;
-    let mut n_to = 0usize;
+    let mut ordexp_to = 0usize;
 
-    if args_len == 5 {
+    if args_len == 6 {
         // from to
-        match std::env::args().nth(4).unwrap().parse() {
-            Ok(val) => {n_to = val},
+        match std::env::args().nth(5).unwrap().parse() {
+            Ok(val) => {ordexp_to = val},
             Err(_e) => println!("Must be a number")
         }
         b_has_to = true;
     }
+
+    // eprintln!("QQ: {b_has_from} - {ordexp_from} - {b_has_to} - {ordexp_to}");
 
     // load all reduced qords
     let mut red_qords = Vec::<Vec<Vec<usize>>>::new();
@@ -76,64 +83,99 @@ fn main() {
     else {
         println!("Error opening file '{}'.", &filename);
     }
-    eprintln!("{}", red_qords.len());
+    let red_qords_size = red_qords.len();
+    eprintln!("{}", red_qords_size);
     
 
     // Výpočet:
     //  1. redukovaného, páry ( qo_i, iso_exp(qo_j) ) pre j>=i
     //  2. iso_exp sa volá pre každé j iba raz
 
-    let mut c_from = 1usize;
-    let mut c_to = 1usize;
-    if b_has_from {
-        c_from = n_from;
+    if curord_idx < 1 || curord_idx > red_qords_size {
+        eprintln!("Current order index must be in range 1 <= curord_idx <= {red_qords_size}.");
+        return;
     }
 
-    if b_has_to {
-        c_to = n_to;
+    let time_iter_start = Instant::now();            
+    let qord2_iso_exp = falglib::rel_isomorphic_expand_vec(&red_qords[curord_idx-1]).0;
+    let qord2_iso_exp_len = qord2_iso_exp.len();
+    eprintln!("Line: {} - {qord2_iso_exp_len}", curord_idx);
+    let mut num_compat = 0usize;
+    let mut cur_perm_cnt = 0usize;
+    let mut ordexp_ffrom  = 0usize;
+    if b_has_from {
+        if ordexp_from < 1 || ordexp_from > qord2_iso_exp_len {
+            eprintln!("Specified ordexp_from must be 1 <= ordexpfrom <= {qord2_iso_exp_len}");
+            return;
+        }
+        ordexp_ffrom = ordexp_from;
     }
     else {
-        c_to = red_qords.len();
+        ordexp_ffrom = 1usize;
+    }
+    let mut ordexp_tto  = 0usize;
+    if b_has_to {
+        if ordexp_to < 1 || ordexp_to > qord2_iso_exp_len {
+            eprintln!("Specified ordexp_to must be 1 <= ordexpfrom <= {qord2_iso_exp_len}");
+            return;
+        }
+        ordexp_tto = ordexp_to;
+    }
+    else {
+        ordexp_tto = qord2_iso_exp_len;
     }
 
-    for qord2_idx in c_from-1..=c_to-1 {
-        let time_iter_start = Instant::now();            
-        let qord2_iso_exp = falglib::rel_isomorphic_expand_vec(&red_qords[qord2_idx]).0;
-        let qord2_iso_exp_len = qord2_iso_exp.len();
-        eprintln!("Line: {} - {qord2_iso_exp_len}", qord2_idx + 1);
-        let mut num_compat = 0usize;
-        let mut cur_perm_cnt = 0usize;
-        for qord2 in qord2_iso_exp {
-                cur_perm_cnt += 1;
-                // if cur_perm_cnt % 500 == 1 {
-                eprintln!("\t- Cur perm: {cur_perm_cnt} / {qord2_iso_exp_len}");    
-                // }
-                for qord1_idx in 0..=qord2_idx { 
-                        
-                    if falglib::rel_are_pair_antisymmetric(&red_qords[qord1_idx], &qord2) {
-                        num_compat+=1;
-                        falglib::falg_generate_with_qords(&red_qords[qord1_idx], &qord2);                            
-                    }
+    // eprintln!("HH: {ordexp_ffrom} - {ordexp_tto}");
+    // return;
+    let iter_limit = 100usize;
+    let mut time_cur_iter_start:Instant = Instant::now();
+    let mut l_num_compat:usize = 0;
+    let mut l_cnt:usize = 0;
+    for qord2exp_idx in (ordexp_ffrom-1)..=(ordexp_tto-1) {
+            //cur_perm_cnt += 1;
+            if l_cnt == 0 {
+                time_cur_iter_start = Instant::now();  
+                eprint!("\t- Cur perm: {} / {qord2_iso_exp_len}", qord2exp_idx+1);    
+                
+                l_num_compat = 0;
+            }
 
-
-                        
-                        // for perm in falglib::rel_get_stabilizer_perms(&parsed_ord1) {
-                        //     already_checked_set.insert(falglib::rel_isomorphic_image(&qord2, &perm));
-                        // }
-                        // }
-                        // else {
-                        //     num_skipped+=1;
-                        // }
-
+            for qord1_idx in 0..curord_idx { 
+                    
+                if falglib::rel_are_pair_antisymmetric(&red_qords[qord1_idx], &qord2_iso_exp[qord2exp_idx]) {
+                    num_compat+=1;
+                    l_num_compat+=1;
+                    falglib::falg_generate_with_qords(&red_qords[qord1_idx], &qord2_iso_exp[qord2exp_idx]);                            
                 }
-                    // already_checked_set.insert(qord2);
-                    // if cur_perm_cnt % 500 == 1 {
-                    //     eprintln!("Skipped count: {}", num_skipped);
+
+
+                    
+                    // for perm in falglib::rel_get_stabilizer_perms(&parsed_ord1) {
+                    //     already_checked_set.insert(falglib::rel_isomorphic_image(&qord2, &perm));
+                    // }
+                    // }
+                    // else {
+                    //     num_skipped+=1;
                     // }
 
-        }
-        eprintln!("{}\t{}\t{}\t{}", qord2_idx+1, qord2_iso_exp_len, num_compat, time_iter_start.elapsed().as_secs_f64());
+            }
+            l_cnt+=1;
+            if l_cnt == iter_limit {
+                eprintln!(" - {} - {}", l_num_compat, time_cur_iter_start.elapsed().as_secs_f64());
+                l_cnt = 0;
+            }
+            
+                // already_checked_set.insert(qord2);
+                // if cur_perm_cnt % 500 == 1 {
+                //     eprintln!("Skipped count: {}", num_skipped);
+                // }
+
     }
+    if l_cnt != 0 {
+        eprintln!(" - {} - {}", l_num_compat, time_cur_iter_start.elapsed().as_secs_f64());
+    }
+    eprintln!("{}\t{}\t{}\t{}", curord_idx, qord2_iso_exp_len, num_compat, time_iter_start.elapsed().as_secs_f64());
+    
     
        
 

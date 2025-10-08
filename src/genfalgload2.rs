@@ -76,7 +76,8 @@ fn main() {
     else {
         println!("Error opening file '{}'.", &filename);
     }
-    eprintln!("{}", red_qords.len());
+    let red_qords_size = red_qords.len();
+    eprintln!("{}", red_qords_size);
     
 
     // Výpočet:
@@ -93,22 +94,21 @@ fn main() {
         c_to = n_to;
     }
     else {
-        c_to = red_qords.len();
+        c_to = red_qords_size;
     }
 
     for qord2_idx in c_from-1..=c_to-1 {
         let time_iter_start = Instant::now();            
-        let qord2_iso_exp = falglib::rel_isomorphic_expand_vec(&red_qords[qord2_idx]).0;
+        let qord2_iso_exp = falglib::rel_isomorphic_expand(&red_qords[qord2_idx]).0;
         let qord2_iso_exp_len = qord2_iso_exp.len();
         eprintln!("Line: {} - {qord2_iso_exp_len}", qord2_idx + 1);
         let mut num_compat = 0usize;
-        let mut cur_perm_cnt = 0usize;
         for qord2 in qord2_iso_exp {
-                cur_perm_cnt += 1;
+                // cur_perm_cnt+=1;
                 // if cur_perm_cnt % 500 == 1 {
-                eprintln!("\t- Cur perm: {cur_perm_cnt} / {qord2_iso_exp_len}");    
+                //     eprintln!("Cur perm: {cur_perm_cnt} / {qord2_iso_exp_len}");    
                 // }
-                for qord1_idx in 0..=qord2_idx { 
+                for qord1_idx in qord2_idx..red_qords_size { 
                         
                     if falglib::rel_are_pair_antisymmetric(&red_qords[qord1_idx], &qord2) {
                         num_compat+=1;
