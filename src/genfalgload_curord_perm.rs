@@ -18,6 +18,30 @@ fn rel_quasi_order_is_zero_minimal(rel_qord:&Vec<Vec<usize>>) -> bool {
     true
 }
 
+fn rel_quasi_order_preserves_order_test(rel_qord:&Vec<Vec<usize>>) -> bool {
+    let n = rel_qord.len();
+
+    for x in 0.. n {
+        for y in 0 .. n {
+            if x > y && rel_qord[x][y] == 1 && rel_qord[y][x] == 0 {
+                let mut b_found = false;
+                for t in 0..y {
+                    if rel_qord[t][y] == 1 && rel_qord[t][x] == 1 && rel_qord[x][t] == 1 {
+                        b_found = true;
+                        break;
+                    }
+                }
+                if !b_found {
+                    return false;
+                }
+            }
+        }
+    }
+    true
+}
+
+
+
 fn main2() {
     let qord1= vec!(vec!(1,1,0,0), vec!(1,1,0,0), vec!(1,1,1,1),vec!(1,1,1,1));
     let qord2= vec!(vec!(1,0,0,0), vec!(0,1,0,0), vec!(1,0,1,0),vec!(1,1,0,1));
@@ -140,47 +164,52 @@ fn main() {
     // eprintln!("HH: {ordexp_ffrom} - {ordexp_tto}");
     // return;
     let num_items = ordexp_tto - ordexp_ffrom + 1;
-    let iter_limit = (num_items) / 10; //100usize;
+    let iter_limit = 1000usize; //(num_items) / 25;
     let mut time_cur_iter_start:Instant = Instant::now();
     let mut l_num_compat:usize = 0;
     let mut l_cnt:usize = 0;
+    let mut l_skip = 0usize;
     let mut skipped_isoexp = 0usize;
     for qord2exp_idx in (ordexp_ffrom-1)..=(ordexp_tto-1) {
-        if !rel_quasi_order_is_zero_minimal(&qord2_iso_exp[qord2exp_idx]) {
-            skipped_isoexp+=1;
-            continue;
-        }
             //cur_perm_cnt += 1;
             if l_cnt == 0 {
                 time_cur_iter_start = Instant::now();  
                 eprint!("\t- Cur perm: {} / {ordexp_tto}", qord2exp_idx+1);    
                 
                 l_num_compat = 0;
+                l_skip = 0;
             }
+            // if rel_quasi_order_is_zero_minimal(&qord2_iso_exp[qord2exp_idx]) {
+            if rel_quasi_order_preserves_order_test(&qord2_iso_exp[qord2exp_idx]) {
+                for qord1_idx in 0..curord_idx { 
+                        
+                    if falglib::rel_are_pair_antisymmetric(&red_qords[qord1_idx], &qord2_iso_exp[qord2exp_idx]) {
+                        num_compat+=1;
+                        l_num_compat+=1;
+                        falglib::falg_generate_with_qords(&red_qords[qord1_idx], &qord2_iso_exp[qord2exp_idx]);                            
+                    }
 
-            for qord1_idx in 0..curord_idx { 
-                    
-                if falglib::rel_are_pair_antisymmetric(&red_qords[qord1_idx], &qord2_iso_exp[qord2exp_idx]) {
-                    num_compat+=1;
-                    l_num_compat+=1;
-                    falglib::falg_generate_with_qords(&red_qords[qord1_idx], &qord2_iso_exp[qord2exp_idx]);                            
+
+                        
+                        // for perm in falglib::rel_get_stabilizer_perms(&parsed_ord1) {
+                        //     already_checked_set.insert(falglib::rel_isomorphic_image(&qord2, &perm));
+                        // }
+                        // }
+                        // else {
+                        //     num_skipped+=1;
+                        // }
+
                 }
-
-
-                    
-                    // for perm in falglib::rel_get_stabilizer_perms(&parsed_ord1) {
-                    //     already_checked_set.insert(falglib::rel_isomorphic_image(&qord2, &perm));
-                    // }
-                    // }
-                    // else {
-                    //     num_skipped+=1;
-                    // }
-
+            }
+            else {
+                skipped_isoexp+=1;
+                l_skip +=1;
             }
             l_cnt+=1;
             if l_cnt == iter_limit {
-                eprintln!(" - {} - {}", l_num_compat, time_cur_iter_start.elapsed().as_secs_f64());
+                eprintln!(" - {} - {} - {}", l_num_compat, l_skip, time_cur_iter_start.elapsed().as_secs_f64());
                 l_cnt = 0;
+                l_skip = 0;
             }
             
                 // already_checked_set.insert(qord2);
@@ -189,11 +218,10 @@ fn main() {
                 // }
 
     }
-    if l_cnt != 0 {
-        eprintln!(" - {} - {}", l_num_compat, time_cur_iter_start.elapsed().as_secs_f64());
+    if l_cnt != 0  || l_skip != 0 {
+        eprintln!(" - {} - {} - {}", l_num_compat, l_skip, time_cur_iter_start.elapsed().as_secs_f64());
     }
-    eprintln!("{}\t{}\t{}\t{}", curord_idx, num_items, num_compat, time_iter_start.elapsed().as_secs_f64());
-    eprintln!("Skipped iso-exp {}", skipped_isoexp);
+    eprintln!("{}\t{}\t{}\t{}\t{}", curord_idx, num_items, num_compat, skipped_isoexp, time_iter_start.elapsed().as_secs_f64());
     
     
        
