@@ -56,6 +56,24 @@ path = "src/genfalgload_curord_perm.rs"
 name = "split_gen_results"
 path = "src/split_gen_results.rs"
 
+[[bin]]
+name = "get_iso_expand_size"
+path = "src/get_iso_expand_size.rs"
+
+[[bin]]
+name = "get_iso_expand_qord"
+path = "src/get_iso_expand_qord.rs"
+
+
+[[bin]]
+name = "split_planner"
+path = "src/split_planner.rs"
+
+[[bin]]
+name = "get_qords"
+path = "src/get_qords.rs"
+
+
 [dependencies]
 # falglib = { path = "c:/users/mhycko/source/repos/mhcheops8b/falglib_r" }
 falglib = { git = "https://github.com/mhcheops8b/falglib_r.git" }

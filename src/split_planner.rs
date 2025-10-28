@@ -5,44 +5,11 @@ use std::path::Path;
 use std::time::Instant;
 // use std::time::{Duration, Instant};
 
-use falglib;
-
-fn rel_quasi_order_is_zero_minimal(rel_qord:&Vec<Vec<usize>>) -> bool {
-    let n = rel_qord.len();
-
-    for x in 1..n {
-        if rel_qord[x][0] == 1 && rel_qord[0][x] == 0 {
-            return false;
-        }
-    }
-    true
-}
-
-fn main2() {
-    let qord1= vec!(vec!(1,1,0,0), vec!(1,1,0,0), vec!(1,1,1,1),vec!(1,1,1,1));
-    let qord2= vec!(vec!(1,0,0,0), vec!(0,1,0,0), vec!(1,0,1,0),vec!(1,1,0,1));
-
-    for qo1 in falglib::rel_isomorphic_expand(&qord1).0 {
-        for qo2 in falglib::rel_isomorphic_expand(&qord2).0 {
-            if falglib::rel_are_pair_antisymmetric(&qord1, &qord2) {
-                falglib::falg_generate_with_qords(&qo1, &qo2);
-            }
-        }
-    }
-
-
-    // println!("{}", falglib::rel_are_pair_antisymmetric(&qord1, &qord2));
-
-    // let status = falglib::falg_generate_with_qords(&qord1, &qord2);
-    // println!("{status}");
-
-}
-
 fn main() {
     let args_len = std::env::args().len();
 
-    if args_len < 4 {
-        println!("Usage: {} <size> <rel_file> <ord_idx> [<ordexp_from> [<ordexp_to>]]", std::env::args().next().unwrap());
+    if args_len < 5 {
+        println!("Usage: {} <size> <rel_file> <ord_idx> <num_parts> [<ordexp_from> [<ordexp_to>]]", std::env::args().next().unwrap());
         return;
     }
 
@@ -61,11 +28,18 @@ fn main() {
         Err(_e) => println!("Must be a number")
     }
 
+    let mut num_parts = 0usize;
+    match std::env::args().nth(4).unwrap().parse() {
+        Ok(val) => {num_parts = val},
+        Err(_e) => println!("Must be a number")
+    }
+
+
     let mut b_has_from = false;
     let mut ordexp_from = 0usize;
-    if args_len >= 5 {
+    if args_len >= 6 {
         // only from 
-        match std::env::args().nth(4).unwrap().parse() {
+        match std::env::args().nth(5).unwrap().parse() {
             Ok(val) => {ordexp_from = val},
             Err(_e) => println!("Must be a number")
         }
@@ -74,9 +48,9 @@ fn main() {
     let mut b_has_to = false;
     let mut ordexp_to = 0usize;
 
-    if args_len == 6 {
+    if args_len == 7 {
         // from to
-        match std::env::args().nth(5).unwrap().parse() {
+        match std::env::args().nth(6).unwrap().parse() {
             Ok(val) => {ordexp_to = val},
             Err(_e) => println!("Must be a number")
         }
@@ -140,65 +114,71 @@ fn main() {
     // eprintln!("HH: {ordexp_ffrom} - {ordexp_tto}");
     // return;
     let num_items = ordexp_tto - ordexp_ffrom + 1;
-    let iter_limit = (num_items) / 10; //100usize;
-    let mut time_cur_iter_start:Instant = Instant::now();
+    let iter_limit = 1;
+    //let mut time_cur_iter_start:Instant = Instant::now();
     let mut l_num_compat:usize = 0;
     let mut l_cnt:usize = 0;
-    let mut skipped_isoexp = 0usize;
+    let mut sizes = Vec::<(usize,usize,usize)>::new();
+    
     for qord2exp_idx in (ordexp_ffrom-1)..=(ordexp_tto-1) {
-        if !rel_quasi_order_is_zero_minimal(&qord2_iso_exp[qord2exp_idx]) {
-            skipped_isoexp+=1;
-            continue;
-        }
-            //cur_perm_cnt += 1;
-            if l_cnt == 0 {
-                time_cur_iter_start = Instant::now();  
-                eprint!("\t- Cur perm: {} / {ordexp_tto}", qord2exp_idx+1);    
-                
-                l_num_compat = 0;
-            }
-
+            l_num_compat = 0;
+ 
             for qord1_idx in 0..curord_idx { 
                     
                 if falglib::rel_are_pair_antisymmetric(&red_qords[qord1_idx], &qord2_iso_exp[qord2exp_idx]) {
                     num_compat+=1;
                     l_num_compat+=1;
-                    falglib::falg_generate_with_qords(&red_qords[qord1_idx], &qord2_iso_exp[qord2exp_idx]);                            
+                    //falglib::falg_generate_with_qords(&red_qords[qord1_idx], &qord2_iso_exp[qord2exp_idx]);                            
                 }
-
-
-                    
-                    // for perm in falglib::rel_get_stabilizer_perms(&parsed_ord1) {
-                    //     already_checked_set.insert(falglib::rel_isomorphic_image(&qord2, &perm));
-                    // }
-                    // }
-                    // else {
-                    //     num_skipped+=1;
-                    // }
-
             }
-            l_cnt+=1;
-            if l_cnt == iter_limit {
-                eprintln!(" - {} - {}", l_num_compat, time_cur_iter_start.elapsed().as_secs_f64());
-                l_cnt = 0;
-            }
+            //l_cnt+=1;
+            // if l_cnt == iter_limit {
+            //     eprintln!(" - {} ", l_num_compat);
+            //     l_cnt = 0;
+            // }
             
                 // already_checked_set.insert(qord2);
                 // if cur_perm_cnt % 500 == 1 {
                 //     eprintln!("Skipped count: {}", num_skipped);
                 // }
-
+        if qord2exp_idx % 500 == 0 {
+            eprintln!("{} - {} - {}", qord2exp_idx+1, l_num_compat, num_compat);
+            sizes.push((qord2exp_idx+1, l_num_compat, num_compat));    
+        }
+        
     }
-    if l_cnt != 0 {
-        eprintln!(" - {} - {}", l_num_compat, time_cur_iter_start.elapsed().as_secs_f64());
-    }
+    // if l_cnt != 0 {
+    //     eprintln!(" - {}", l_num_compat);
+    // }
+    eprintln!("{:?}",sizes);
     eprintln!("{}\t{}\t{}\t{}", curord_idx, num_items, num_compat, time_iter_start.elapsed().as_secs_f64());
-    eprintln!("Skipped iso-exp {}", skipped_isoexp);
     
-    
-       
+    let mut per_instance = num_compat / num_parts;    
+    if num_items % num_parts != 0 {
+        per_instance +=1;
+    }   
 
+    let mut start_vec_idx = 0usize;
+    let mut cur_instance_limit = per_instance;
+    let mut end_vec_idx = 0usize;
+
+    while end_vec_idx < sizes.len() {
+        if sizes[end_vec_idx].2 > cur_instance_limit {
+            println!("{start_vec_idx} - {}: {} {}", end_vec_idx - 1, sizes[start_vec_idx].0, sizes[end_vec_idx -1].0);
+            start_vec_idx  = end_vec_idx;
+            cur_instance_limit += per_instance;
+
+            if cur_instance_limit > num_compat {
+                cur_instance_limit = num_compat;
+            }
+
+        }
+        else {
+            end_vec_idx += 1;
+        }
+    }
     
+    println!("{start_vec_idx} - {}: {} {}", sizes.len() - 1, sizes[start_vec_idx].0, sizes[sizes.len() - 1].0);
 
     // let mut line2_idx = 0usize;
     // if let Ok(lines_qord2) = read_lines(&filename) {
