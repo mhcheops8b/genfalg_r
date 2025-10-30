@@ -53,6 +53,10 @@ name = "genfalgload_curord_perm"
 path = "src/genfalgload_curord_perm.rs"
 
 [[bin]]
+name = "genfalgload_curord_perm2"
+path = "src/genfalgload_curord_perm2.rs"
+
+[[bin]]
 name = "split_gen_results"
 path = "src/split_gen_results.rs"
 
