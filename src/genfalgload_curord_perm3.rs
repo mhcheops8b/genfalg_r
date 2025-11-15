@@ -191,7 +191,7 @@ fn main() {
     let qord2_iso_exp_len = qord2_iso_exp.len();
     if min_count >=2 {
         eprintln!("Line: {} - {qord2_iso_exp_len} - Skipping", curord_idx);   
-        eprintln!("{}\t{}\t{}\t{}\t{}\t{}\t{:.4}", curord_idx, qord2_iso_exp_len, 0, 0, 0, iso_expand_full_size - qord2_iso_exp_len, 0.00);
+        eprintln!("{}\t{}\t{}\t{}\t{}\t{:.4}", curord_idx, qord2_iso_exp_len, 0, 0, iso_expand_full_size - qord2_iso_exp_len, 0.00);
         return; 
     }
     

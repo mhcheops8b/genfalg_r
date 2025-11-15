@@ -3,3 +3,4 @@
 *.txt
 *.log
 /comput.9
+Cargo.lock
