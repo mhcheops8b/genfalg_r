@@ -10,6 +10,20 @@ use std::io::Write as OW;
 use falglib;
 
 fn main() {
+//     let mut cursize = 0usize;
+//     match std::env::args().nth(1).unwrap().parse() {
+//         Ok(val) => {cursize = val},
+//         Err(_e) => println!("Must be a number")
+//     }
+
+// //    let n = 5;
+//     let mut jj = String::new();
+//     //let fmt=format!("{{:0{n}}}");
+//     //println!("{}", fmt);
+//     write!(&mut jj, "{:0cursize$}", 120).unwrap();
+//     println!("{}", jj);
+//     return;
+
     let args_len = std::env::args().len();
 
     if args_len < 3 {
@@ -61,6 +75,7 @@ fn main() {
     }
     eprintln!("{}", red_qords.len());
     
+    let loglen =(red_qords.len() as f32).log(10.0).ceil() as usize;
 
     // Výpočet:
     //  1. redukovaného, páry ( qo_i, iso_exp(qo_j) ) pre j>=i
@@ -82,8 +97,8 @@ fn main() {
     for qord2_idx in c_from-1..=c_to-1 {
         let mut log_filename = String::new();
         let mut out_filename = String::new();
-        write!(&mut log_filename, "redfalg9-{:06}-v7.log", qord2_idx + 1).unwrap();
-        write!(&mut out_filename, "redfalg9-{:06}-v7.txt", qord2_idx + 1).unwrap();
+        write!(&mut log_filename, "redfalg{}-{:0loglen$}-v7.log", cursize, qord2_idx + 1).unwrap();
+        write!(&mut out_filename, "redfalg{}-{:0loglen$}-v7.txt", cursize, qord2_idx + 1).unwrap();
         // eprintln!("Log filename: {}", &log_filename);
         
         let out_pth = Path::new(&out_filename);
@@ -123,8 +138,8 @@ fn main() {
         let iso_expand_full_size = falglib::rel_isomorphic_expand_full_size(&red_qords[qord2_idx]);            
         let qord2_iso_exp = falglib::rel_isomorphic_expand_reduced_vec(&red_qords[qord2_idx]).0;
         let qord2_iso_exp_len = qord2_iso_exp.len();
-        let min_count = falglib::rel_count_strict_minimal_elements(&red_qords[qord2_idx]);
-        if min_count >=2 {
+        
+        if !falglib::rel_strict_minimal_elements_le_one(&red_qords[qord2_idx]) {
             // log_writer.write_fmt(format_args!("Line: {} - {qord2_iso_exp_len} - Skipping\n", qord2_idx+1)).unwrap();
             // log_writer.write_fmt(format_args!("{}\t{}\t{}\t{}\t{}\t{:.4}", qord2_idx, qord2_iso_exp_len, 0, 0, iso_expand_full_size - qord2_iso_exp_len, 0.00)).unwrap();
             //log_writer.flush().unwrap();   
