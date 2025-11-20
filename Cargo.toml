@@ -20,6 +20,13 @@ path = "src/genfalgload2.rs"
 name = "genfalgload3"
 path = "src/genfalgload3.rs"
 
+[[bin]]
+name = "genfalgload4"
+path = "src/genfalgload4.rs"
+
+[[bin]]
+name = "genfalgload5"
+path = "src/genfalgload5.rs"
 
 [[bin]]
 name = "genfalgstabload"
