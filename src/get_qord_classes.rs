@@ -94,6 +94,8 @@ fn rel_get_classes(qord:&Vec<Vec<usize>>) {
 
     let mut b_has_class_vec = Vec::<bool>::new();
     let mut class_vec = Vec::<usize>::new();
+    let mut id_to_cls_map = HashMap::<usize, HashSet<usize>>::new();
+    let mut el_to_id_map =  HashMap::<usize, usize>::new();
     for i in 0..n {
         b_has_class_vec.push(false);
         class_vec.push(0);
@@ -105,54 +107,73 @@ fn rel_get_classes(qord:&Vec<Vec<usize>>) {
             last_class_id +=1;
             b_has_class_vec[x] = true;
             class_vec[x] = last_class_id;
+            id_to_cls_map.insert(last_class_id, HashSet::from([x]));
+            el_to_id_map.insert(x, last_class_id);
 
             for y in (x+1)..n {
                 if rel_is_equiv(qord, x, y) {
                     b_has_class_vec[y] = true;
                     class_vec[y] = last_class_id;
+                    id_to_cls_map.get_mut(&last_class_id).unwrap().insert(y);
+                    el_to_id_map.insert(y, last_class_id);
+
                 }
             }
         }
     }
+    // eprintln!("Dbg: {:?}", id_to_cls_map);
+    // eprintln!("Dbg: {:?}", el_to_id_map);
+    //eprintln!("{:?}", id_to_cls_map[&1].iter().nth(0).unwrap());
 
     println!("{last_class_id}");
     for i in 1..=last_class_id {
         print!("{i}: ");
         let mut b_first = true;
-        for x in 0.. n {
-            if class_vec[x] == i {
-                if b_first {
-                    print!("{x}");
-                    b_first = false;
-                }
-                else {
-                    print!(", {x}")
-                }
+        for ex in id_to_cls_map[&i].iter() {
+            if b_first {
+                b_first = false;
             }
+            else {
+                print!(", ");
+            }
+            print!("{}", *ex);
         }
+        // for x in 0.. n {
+        //     if class_vec[x] == i {
+        //         if b_first {
+        //             print!("{x}");
+        //             b_first = false;
+        //         }
+        //         else {
+        //             print!(", {x}")
+        //         }
+        //     }
+        // }
         println!();
     }
 
     println!("--Cls_Less--");
     for i in 1..=last_class_id {
-        let mut repr_i = 0usize;
-        for x in 0..n {
-            if class_vec[x]==i {
-                repr_i = x;
-                break;
-            }
-        }
+        let repr_i = id_to_cls_map[&i].iter().nth(0).unwrap();
+        // let mut repr_i = 0usize;
+        // for x in 0..n {
+        //     if class_vec[x]==i {
+        //         repr_i = x;
+        //         break;
+        //     }
+        // }
         print!("{i}: ");
         let mut b_first = true;
         for j in 1..=last_class_id {
-            let mut repr_j = 0usize;
-            for x in 0..n {
-                if class_vec[x]==j {
-                    repr_j = x;
-                    break;
-                }
-            }
-            if qord[repr_i][repr_j] == 1 {
+            let repr_j = id_to_cls_map[&j].iter().nth(0).unwrap();
+            // let mut repr_j = 0usize;
+            // for x in 0..n {
+            //     if class_vec[x]==j {
+            //         repr_j = x;
+            //         break;
+            //     }
+            // }
+            if qord[*repr_i][*repr_j] == 1 {
                 if !b_first {
                     print!(", ");
                 }
@@ -165,6 +186,47 @@ fn rel_get_classes(qord:&Vec<Vec<usize>>) {
         println!();
     }
 
+    println!("--Cls_Cover--");
+    for i in 1..=last_class_id {
+        let repr_i = id_to_cls_map[&i].iter().nth(0).unwrap();
+        print!("{i}: ");
+        let mut b_first = true;
+        for j in 1..=last_class_id {
+            if i == j {
+                continue
+            }
+            let repr_j = id_to_cls_map[&j].iter().nth(0).unwrap();
+            // let mut repr_j = 0usize;
+            // for x in 0..n {
+            //     if class_vec[x]==j {
+            //         repr_j = x;
+            //         break;
+            //     }
+            // }
+            if qord[*repr_i][*repr_j] == 1 {
+                let mut b_found = false;
+                for k in 1..=last_class_id {
+                    if i != k && j != k {
+                        let repr_k = id_to_cls_map[&k].iter().nth(0).unwrap();
+                        if qord[*repr_i][*repr_k] == 1 && qord[*repr_k][*repr_j] == 1 {
+                            b_found = true;
+                        }
+                    }
+                    
+                }
+                if !b_found {
+                    if !b_first {
+                        print!(", ");
+                    }
+                    else {
+                        b_first = false;
+                    }
+                    print!("{j}")
+                }
+            }
+        }
+        println!();
+    }
 
 //     let cl_id = 0;
 }

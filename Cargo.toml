@@ -93,6 +93,10 @@ path = "src/split_planner.rs"
 name = "get_qords"
 path = "src/get_qords.rs"
 
+[[bin]]
+name = "get_qord_classes"
+path = "src/get_qord_classes.rs"
+
 
 [dependencies]
 # falglib = { path = "c:/users/mhycko/source/repos/mhcheops8b/falglib_r" }
