@@ -29,7 +29,9 @@ fn main() {
         for line_falg in lines_falg.map_while(Result::ok) {
             let parsed_falg = falglib::parse_vector(cursize, &line_falg);
 
-            println!("{:?}", falglib::falg_get_qord1(&parsed_falg));
+            let qord1 = falglib::falg_get_qord1(&parsed_falg);
+            println!("{:?}", qord1);
+            rel_get_classes(&qord1);
             let qord2 = falglib::falg_get_qord2(&parsed_falg);
             println!("{:?}", qord2);
             rel_get_classes(&qord2);
