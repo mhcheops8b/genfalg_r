@@ -63,76 +63,120 @@ fn main() {
     }
     
     println!("{:?}", &curqord);
-    rel_get_classes(&curqord);
-    let cls_map = rel_get_classes_map(&curqord);
-    println!("---\n{:?}", cls_map);
-    println!("---\n{:?}", rel_get_classes_order(&curqord, &cls_map));
+    // rel_get_classes(&curqord);
+    let cls_map = falglib::rel_get_classes_map(&curqord);
+    // println!("---\n{:?}", cls_map);
+    // println!("---");
+    // for (k,v) in cls_map.iter() {
+    //     println!("{}: {:?}", k, v);
+    // }
+    println!("--Classes--");
+    for k_id in 1..=cls_map.len() {
+        println!("{}: {:?}", k_id, cls_map[&k_id]);
+    }
     let cov_rel = rel_get_classes_cover_rel(&curqord, &cls_map);
-    println!("---\n{:?}", cov_rel);
-    get_levels(&cov_rel);
-    let cls_coords = get_class_coords(&cov_rel);
-    println!("---\n{:?}", cls_coords);
-
-    for i in 1..=cov_rel.len() {
-        print!("\\node [circle,fill,label={{[name=cls{}]below:$", i);
-        let mut b_first = true;
-        for e in &cls_map[&i] {
-            if b_first {
-                b_first = false;
-            }
-            else {
-                print!(", ");
-            }
-            print!("{}", e);
-        }
-            
-        println!("$}}] at {:?} {{}};", cls_coords[i-1]);
-    }
+    println!("--Cover_Rel--");
     for i in 0..cov_rel.len() {
-        for j in 0..cov_rel.len() {
+        print!("{}: ", i+1);
+        let mut b_first = true;
+        for j in 0..cov_rel.len(){
             if cov_rel[i][j] == 1 {
-                println!("\\draw {:?} -- {:?};", cls_coords[i], cls_coords[j]);
+                if b_first {
+                    b_first = false;
+                }
+                else {
+                    print!(", ");
+                }
+                print!("{}", j+1);
             }
         }
+        println!();
     }
+    
+    // println!("---\n{:?}", rel_get_classes_order(&curqord, &cls_map));
+    
+    // println!("---\n{:?}", cov_rel);
+    // get_levels(&cov_rel);
+    let cls_coords = falglib::cov_rel_get_class_coords(&cov_rel);
+    // println!("---\n{:?}", cls_coords);
+    println!("---Tikz_picture---");
+    falglib::_rel_qord_print_tikz(&cls_map, &cov_rel, &cls_coords);
 
-
+    // println!("---");
+    // falglib::rel_qord_print_tikz(&curqord);
 }
 
-fn get_class_coords(cov_rel: &Vec<Vec<usize>>) -> Vec<(usize,usize)> {
-    let n = cov_rel.len();
+// pub fn _rel_qord_print_tikz(cls_map: &HashMap<usize, Vec<usize>>, cov_rel: &Vec<Vec<usize>>, cls_coords: &Vec<(usize, usize)>) {
+//     println!("\\tikz {{");
+//     for i in 1..=cov_rel.len() {
+//         print!("\\node [circle,fill,label={{[name=cls{}]below:$", i);
+//         let mut b_first = true;
+//         for e in &cls_map[&i] {
+//             if b_first {
+//                 b_first = false;
+//             }
+//             else {
+//                 print!(", ");
+//             }
+//             print!("{}", e);
+//         }
+            
+//         println!("$}}] at {:?} {{}};", cls_coords[i-1]);
+//     }
+//     for i in 0..cov_rel.len() {
+//         for j in 0..cov_rel.len() {
+//             if cov_rel[i][j] == 1 {
+//                 println!("\\draw {:?} -- {:?};", cls_coords[i], cls_coords[j]);
+//             }
+//         }
+//     }
+//     println!("}}");
+// }
 
-    let mut max_levels = Vec::<usize>::new();
-    let mut x_coords = Vec::<usize>::new();
-    let mut last_x_coord = Vec::<usize>::new();
-    for _ in 0..n {
-        max_levels.push(0);
-        x_coords.push(0);
-        last_x_coord.push(0);
-    }
+// fn rel_qord_print_tikz(qord: &Vec<Vec<usize>>) {//cls_map: &HashMap<usize, Vec<usize>>, cov_rel: &Vec<Vec<usize>>, cls_coords: &Vec<(usize, usize)>) {
+//     let cls_map = rel_get_classes_map(&qord);
+//     let cov_rel = rel_get_classes_cover_rel(&qord, &cls_map);
+//     let cls_coords = get_class_coords(&cov_rel);
+//     _rel_qord_print_tikz(&cls_map, &cov_rel, &cls_coords);
+// }
 
-    for i in 0..n {
-        if max_levels[i] == 0 {
-            max_levels[i] = 1;
-      //      x_coords[i] = 
-        }
-        for j in 0..n {
-            if cov_rel[i][j] == 1 {
-                max_levels[j] = std::cmp::max(max_levels[j], max_levels[i] + 1);
-            }
-        }
-    }
-    //println!("{:?}", max_levels);
-    for j in 0..n {
-        last_x_coord[max_levels[j] - 1] +=1;
-        x_coords[j] = last_x_coord[max_levels[j] - 1]; 
-    }
-    //println!("{:?}", x_coords);
-    let iter = std::iter::zip(x_coords,max_levels);
-    let v:Vec<_> = iter.map(|(a,b)| (a-1,b-1)).collect();
 
-    v
-}
+
+// fn get_class_coords(cov_rel: &Vec<Vec<usize>>) -> Vec<(usize,usize)> {
+//     let n = cov_rel.len();
+
+//     let mut max_levels = Vec::<usize>::new();
+//     let mut x_coords = Vec::<usize>::new();
+//     let mut last_x_coord = Vec::<usize>::new();
+//     for _ in 0..n {
+//         max_levels.push(0);
+//         x_coords.push(0);
+//         last_x_coord.push(0);
+//     }
+
+//     for i in 0..n {
+//         if max_levels[i] == 0 {
+//             max_levels[i] = 1;
+//       //      x_coords[i] = 
+//         }
+//         for j in 0..n {
+//             if cov_rel[i][j] == 1 {
+//                 max_levels[j] = std::cmp::max(max_levels[j], max_levels[i] + 1);
+//             }
+//         }
+//     }
+//     //println!("{:?}", max_levels);
+//     for j in 0..n {
+//         last_x_coord[max_levels[j] - 1] +=1;
+//         x_coords[j] = last_x_coord[max_levels[j] - 1]; 
+//     }
+//     //println!("{:?}", x_coords);
+//     let iter = std::iter::zip(x_coords,max_levels);
+//     let v:Vec<_> = iter.map(|(a,b)| (a-1,b-1)).collect();
+
+//     v
+// }
+
 fn get_levels(cov_rel: &Vec<Vec<usize>>) {
     let n = cov_rel.len();
 
@@ -193,36 +237,36 @@ where P: AsRef<Path>, {
     Ok(io::BufReader::new(file).lines())
 }
 
-fn rel_is_equiv(qord:&Vec<Vec<usize>>, x: usize, y:usize) -> bool {
-    qord[x][y] == 1 && qord[y][x]==1
-}
+// fn rel_is_equiv(qord:&Vec<Vec<usize>>, x: usize, y:usize) -> bool {
+//     qord[x][y] == 1 && qord[y][x]==1
+// }
 
-fn rel_get_classes_map(qord:&Vec<Vec<usize>>) -> HashMap<usize, Vec<usize>> {
-    let n = qord.len();
+// fn rel_get_classes_map(qord:&Vec<Vec<usize>>) -> HashMap<usize, Vec<usize>> {
+//     let n = qord.len();
 
-    let mut b_has_class_vec = Vec::<bool>::new();
-    let mut id_to_cls_vec_map = HashMap::<usize, Vec<usize>>::new();
-    for i in 0..n {
-        b_has_class_vec.push(false);
-    }
+//     let mut b_has_class_vec = Vec::<bool>::new();
+//     let mut id_to_cls_vec_map = HashMap::<usize, Vec<usize>>::new();
+//     for i in 0..n {
+//         b_has_class_vec.push(false);
+//     }
 
-    let mut last_class_id = 0usize;
-    for x in 0..n {
-        if !b_has_class_vec[x] {
-            last_class_id +=1;
-            id_to_cls_vec_map.insert(last_class_id, Vec::from([x]));
+//     let mut last_class_id = 0usize;
+//     for x in 0..n {
+//         if !b_has_class_vec[x] {
+//             last_class_id +=1;
+//             id_to_cls_vec_map.insert(last_class_id, Vec::from([x]));
 
-            for y in (x+1)..n {
-                if rel_is_equiv(qord, x, y) {
-                    b_has_class_vec[y] = true;
-                    id_to_cls_vec_map.get_mut(&last_class_id).unwrap().push(y);
+//             for y in (x+1)..n {
+//                 if rel_is_equiv(qord, x, y) {
+//                     b_has_class_vec[y] = true;
+//                     id_to_cls_vec_map.get_mut(&last_class_id).unwrap().push(y);
 
-                }
-            }
-        }
-    }
-    id_to_cls_vec_map 
-}
+//                 }
+//             }
+//         }
+//     }
+//     id_to_cls_vec_map 
+// }
 
 fn rel_get_classes_order(qord:&Vec<Vec<usize>>, cls_map:&HashMap<usize, Vec<usize>>) -> Vec<Vec<usize>> {
     let n = cls_map.len();
@@ -315,7 +359,7 @@ fn rel_get_classes(qord:&Vec<Vec<usize>>) {
             el_to_id_map.insert(x, last_class_id);
 
             for y in (x+1)..n {
-                if rel_is_equiv(qord, x, y) {
+                if falglib::rel_is_equiv(qord, x, y) {
                     b_has_class_vec[y] = true;
                     class_vec[y] = last_class_id;
                     id_to_cls_map.get_mut(&last_class_id).unwrap().insert(y);
