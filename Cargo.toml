@@ -84,6 +84,10 @@ path = "src/get_iso_expand_size.rs"
 name = "get_iso_expand_qord"
 path = "src/get_iso_expand_qord.rs"
 
+[[bin]]
+name = "get_iso_expand_falg"
+path = "src/get_iso_expand_falg.rs"
+
 
 [[bin]]
 name = "split_planner"
