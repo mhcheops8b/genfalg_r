@@ -48,7 +48,7 @@ fn main() {
 		cur_line+=1;
 		if cur_line >= from_line && (to_line == 0 || cur_line<=to_line) {
 			let parsed_falg = falglib::parse_vector(cursize, &line_qord);
-			let iso_exp_size = falglib::falg_isomorphic_expand(&parsed_falg).0.len();
+			let iso_exp_size = falglib::falg_isomorphic_expand_just_algs(&parsed_falg).len();
 			println!("{}\t{}", cur_line, iso_exp_size);
 		}
         }
