@@ -94,12 +94,24 @@ name = "split_planner"
 path = "src/split_planner.rs"
 
 [[bin]]
+name = "split_by_pairord"
+path = "src/split_by_pairord.rs"
+
+[[bin]]
+name = "split_by_pairord_cont"
+path = "src/split_by_pairord_cont.rs"
+
+[[bin]]
 name = "get_qords"
 path = "src/get_qords.rs"
 
 [[bin]]
 name = "get_qord_classes"
 path = "src/get_qord_classes.rs"
+
+[[bin]]
+name = "test1_split_by_pairord"
+path = "src/test1_split_by_pairord.rs"
 
 
 [dependencies]
